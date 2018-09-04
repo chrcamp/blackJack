@@ -3,21 +3,7 @@ import copy
 
 # define defaults
 
-deck = ['2♧','2♢','2♡','2♤',
-        '3♧','3♢','3♡','3♤',
-        '4♧','4♢','4♡','4♤',
-        '5♧','5♢','5♡','5♤',
-        '6♧','6♢','6♡','6♤',
-        '7♧','7♢','7♡','7♤',
-        '8♧','8♢','8♡','8♤',
-        '9♧','9♢','9♡','9♤',
-        '10♧','10♢','10♡','10♤',
-        'J♧','J♢','J♡','J♤',
-        'Q♧','Q♢','Q♡','Q♤',
-        'K♧','K♢','K♡','K♤',
-        'A♧','A♢','A♡','A♤']
-
-card_val = {'2♧':2,'2♢':2,'2♡':2,'2♤':2,
+full_deck = {'2♧':2,'2♢':2,'2♡':2,'2♤':2,
             '3♧':3,'3♢':3,'3♡':3,'3♤':3,
             '4♧':4,'4♢':4,'4♡':4,'4♤':4,
             '5♧':5,'5♢':5,'5♡':5,'5♤':5,
@@ -32,9 +18,10 @@ card_val = {'2♧':2,'2♢':2,'2♡':2,'2♤':2,
             'A♧':11,'A♢':11,'A♡':11,'A♤':11}
 
 wallet = 100
-player_hand = []
-dealer_hand = []
+p_hand = {}
+d_hand = {}
 round_status = ''
+move = ''
 
 # define functions
 
@@ -57,95 +44,103 @@ def bet():
         except ValueError:
             print('You must bet in dollars only.')
 
-def deal():
-    while len(player_hand) < 2 and len(dealer_hand) < 2:
-        card = str(deck[random.randint(0,len(deck)-1)])
-        player_hand.append(card)
-        deck.remove(card)
+def evaluate():
+    global p_val
+    global d_val
+    p_val = sum(p_hand.values())
+    d_val = sum(d_hand.values())
 
-        card = str(deck[random.randint(0,len(deck)-1)])
-        dealer_hand.append(card)
-        deck.remove(card)
+def deal():
+    global round_status
+    while len(p_hand) < 2 and len(d_hand) < 2:
+        card = random.choice(list(deck))
+        p_hand[card] = deck.get(card)
+        del deck[card]
+
+        card = random.choice(list(deck))
+        d_hand[card] = deck.get(card)
+        del deck[card]
+    print('You were dealt the hand: ' +str(list(p_hand)))
+    print('The dealer is showing: ' + list(d_hand)[0])
+    evaluate()
+    if d_val == 21:
+        round_status = 'L'
+    elif p_val == 21:
+        round_status = 'W'
 
 def hit():
-    global hand_val
-    global move
-    while move == 'hit':
-        card = str(deck[random.randint(0,len(deck)-1)])
-        player_hand.append(card)
-        deck.remove(card)
-        print('You were dealt: ' + card + '. Your hand is now: ' + str(player_hand))
-        hand_val = hand_val + card_val[card]
-        move = ''
-        if hand_val > 21:
-            print('YOU BUST, IDIOT!!!! Dealer wins the hand.')
-            round_status = 'L'
+    global round_status
+    card = random.choice(list(deck))
+    p_hand[card] = deck.get(card)
+    del deck[card]
+    print('You were dealt ' + card)
+    print('Your hand is now: '+str(list(p_hand)))
+    evaluate()
+    if p_val > 21:
+        print('You BUST, IDIOT!!')
+        round_status = 'L'
 
 def house_finish():
-    global house_val
-    global hand_val
-    while house_val < 16 and house_val < hand_val:
-        card = str(deck[random.randint(0,len(deck)-1)])
-        dealer_hand.append(card)
-        deck.remove(card)
-        print('The dealer flips: ' + card)
-        house_val = house_val + card_val[card]
-        if house_val > 21:
-            print('The Dealer bust. You win the hand!')
-            round_status = 'W'
+    global d_val
+    global p_val
+    global round_status
+    while True:
+        if round_status == 'L':
+            break
+        elif d_val < 16 and d_val < p_val:
+            card = random.choice(list(deck))
+            d_hand[card] = deck.get(card)
+            del deck[card]
+            print('The dealer flips: ' + card)
+            evaluate()
+            continue
+        else:
+            evaluate()
+            if d_val > 21:
+                print('The dealer BUST!')
+                round_status = 'W'
+            elif d_val < p_val:
+                round_status = 'W'
+            elif d_val > p_val:
+                round_status = 'L'
+            break
+
+def move():
+    global round_status
+    while True:
+        if round_status != '':
+            break
+        else:
+            move = input('Would you like to Hit or Stay? ')
+            move = move.lower()
+            if move == 'hit':
+                hit()
+                move = ''
+                continue
+            elif move == 'stay':
+                break
+            else:
+                print('You must choose either Hit or Stay. What would you like to do? ')
+                move = ''
+                continue
 
 # round start
 
+deck = full_deck.copy()
 bet()
 deal()
 
-house_val = card_val[dealer_hand[0]] + card_val[dealer_hand[1]]
-hand_val = card_val[player_hand[0]] + card_val[player_hand[1]]
-
-if house_val == 21:
-    print('You were dealt the hand: '+ str(player_hand))
-    print('The dealer has: '+ str(dealer_hand))
-    print('Dealer has a Blackjack, you lose the hand.')
-    round_status = 'L'
-elif hand_val == 21:
-    print('You were dealt the hand: '+ str(player_hand))
-    print('The dealer has: '+ str(dealer_hand))
-    print('Blackjack!! You win the hand!')
-    round_status = 'W'
-else:
-    print('You were dealt the hand: '+ str(player_hand))
-    print('The dealer has '+str(dealer_hand[0])+' showing.')
-    move = input('Would you like to Hit or Stay?   ')
-    move = move.lower()
-    if move == 'hit':
-        hit()
-        move = ''
-    elif move == 'stay':
-        house_finish()
+while True:
+    if round_status == 'W':
+        print('You win the hand!')
+        wallet = wallet +(bet*2)
+        break
+    elif round_status == 'L':
+        print('You lost the hand...')
+        break
     else:
-        print('Your options are Hit or Stay. Which would you like to do?')
+        move()
+        house_finish()
+        continue
 
-if hand_val > house_val:
-    print('You beat the dealer!')
-    round_status = 'W'
-else:
-    print('The dealer beat you...')
-    round_status = 'L'
-
-
-
-# figure out if python convention uses camelCase or under_score for variable names. Also, stop giving variables dumb names.
-
-# figure out a way to make the Ace value dynamic--i.e. 1 or 11
-# end hand by printing player_hand and dealer_hand for final reveal/results
-# refine hit() fn. can only hit once. need better loop to give you 2+ decisions
-# build decision() fn loop to streamline hit() stay(). consider split() double()
-# simplify round. use round_status as round end/rest indicator.
-# make complete game loop with aggregate wallet until a Loss with $0 left. Game currently ends after 1 hand.
-# for complete game loop, decide whether or not to use a fresh deck. consider using 3 decks simultaneously.
-# consider importing time module to add a 1 second delay between output. the instant response/processing somehow pisses me off...
-
-# long-term: learn a python gui --probably pygame or tkinter-- and migrate.
-
-
-
+print('You have $'+str(wallet)+' remaining in your wallet.')

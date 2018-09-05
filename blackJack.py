@@ -18,14 +18,10 @@ full_deck = {'2♧':2,'2♢':2,'2♡':2,'2♤':2,
             'A♧':11,'A♢':11,'A♡':11,'A♤':11}
 
 wallet = 100
-p_hand = {}
-d_hand = {}
-round_status = ''
-move = ''
 
 # define functions
 
-def bet():
+def placeBet():
     global wallet
     global bet
     while True:
@@ -39,7 +35,7 @@ def bet():
                 continue
             else:
                 wallet = wallet - bet
-                print('Your bet is $' + str(bet) + '. You have $' + str(wallet) + ' remaining')
+                print('Your bet is $' + str(bet))
                 break
         except ValueError:
             print('You must bet in dollars only.')
@@ -64,9 +60,12 @@ def deal():
     print('The dealer is showing: ' + list(d_hand)[0])
     evaluate()
     if d_val == 21:
+        print('The dealer has a BlackJack')
         round_status = 'L'
     elif p_val == 21:
+        print('BLACKJACK!!!')
         round_status = 'W'
+        
 
 def hit():
     global round_status
@@ -80,7 +79,7 @@ def hit():
         print('You BUST, IDIOT!!')
         round_status = 'L'
 
-def house_finish():
+def houseFinish():
     global d_val
     global p_val
     global round_status
@@ -106,7 +105,7 @@ def house_finish():
                 round_status = 'L'
             break
 
-def move():
+def playerAction():
     global round_status
     while True:
         if round_status != '':
@@ -125,23 +124,33 @@ def move():
                 move = ''
                 continue
 
+
 # round start
 
-deck = full_deck.copy()
-bet()
-deal()
-
 while True:
-    if round_status == 'W':
-        print('You win the hand!')
-        wallet = wallet +(bet*2)
+    if wallet > 0:
+        deck = full_deck.copy()
+        p_hand = {}
+        d_hand = {}
+        round_status = ''
+        move = ''
+        placeBet()
+        deal()
+        while True:
+            if round_status == 'W':
+                print('You win the hand!')
+                wallet = wallet +(bet*2)
+                break
+            elif round_status == 'L':
+                print('You lost the hand...')
+                break
+            else:
+                playerAction()
+                houseFinish()
+                continue
+            print('You have $'+str(wallet)+' remaining in your wallet.')
+            continue
+    elif wallet == 0:
+        print('You are out of money. Game over....')
+        print('Thanks for playing.')
         break
-    elif round_status == 'L':
-        print('You lost the hand...')
-        break
-    else:
-        move()
-        house_finish()
-        continue
-
-print('You have $'+str(wallet)+' remaining in your wallet.')

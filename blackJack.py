@@ -92,6 +92,7 @@ def house_finish():
             d_hand[card] = deck.get(card)
             del deck[card]
             print('The dealer flips: ' + card)
+            print('The dealers hand is: '+str(list(d_hand)))
             evaluate()
             continue
         else:

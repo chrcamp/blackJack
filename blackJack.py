@@ -1,5 +1,7 @@
-import random
-import copy
+#blackJack.py
+# Use Python 3
+
+import random, copy, time
 
 # define defaults
 
@@ -22,11 +24,10 @@ wallet = 100
 # define functions
 
 def placeBet():
-    global wallet
-    global bet
+    global wallet, bet
     while True:
         try:
-            bet = int(input('You currently have $' + str(wallet) + '. Enter your bet: '))
+            bet = int(input('You have $' + str(wallet) + ' in your wallet. \nPlace your bet: $'))
             if bet <= 0:
                 print('You must bet at least $1.')
                 continue
@@ -35,73 +36,73 @@ def placeBet():
                 continue
             else:
                 wallet = wallet - bet
-                print('Your bet is $' + str(bet))
                 break
         except ValueError:
             print('You must bet in dollars only.')
 
 def evaluate():
-    global p_val
-    global d_val
-    p_val = sum(p_hand.values())
-    d_val = sum(d_hand.values())
+    global player_value, dealer_value
+    player_value = sum(player_hand.values())
+    dealer_value = sum(dealer_hand.values())
 
 def deal():
     global round_status
-    while len(p_hand) < 2 and len(d_hand) < 2:
+    while len(player_hand) < 2 and len(dealer_hand) < 2:
         card = random.choice(list(deck))
-        p_hand[card] = deck.get(card)
+        player_hand[card] = deck.get(card)
         del deck[card]
 
         card = random.choice(list(deck))
-        d_hand[card] = deck.get(card)
+        dealer_hand[card] = deck.get(card)
         del deck[card]
-    print('You were dealt the hand: ' +str(list(p_hand)))
-    print('The dealer is showing: ' + list(d_hand)[0])
+    print('\n\tYou were dealt the hand: ' + (' '.join(list(player_hand))))
+    time.sleep(0.25)
+    print('\tThe dealer is showing: ' + list(dealer_hand)[0]+'\n')
+    time.sleep(0.25)
     evaluate()
-    if d_val == 21:
-        print('The dealer has a BlackJack')
+    if dealer_value == 21:
+        print('\tThe dealer has a BlackJack')
         round_status = 'L'
-    elif p_val == 21:
-        print('BLACKJACK!!!')
+    elif player_value == 21:
+        print('\t' + '*'*18 + '\n\t** BLACKJACK!!! **\n\t' + '*'*18 + '\n')
         round_status = 'W'
         
 
 def hit():
     global round_status
     card = random.choice(list(deck))
-    p_hand[card] = deck.get(card)
+    player_hand[card] = deck.get(card)
     del deck[card]
-    print('You were dealt ' + card)
-    print('Your hand is now: '+str(list(p_hand)))
+    print('\tYou were dealt ' + card)
+    time.sleep(0.25)
+    print('\tYour hand is now: '+ (' '.join(list(player_hand)))+'\n')
+    time.sleep(0.25)
     evaluate()
-    if p_val > 21:
-        print('You BUST, IDIOT!!')
+    if player_value > 21:
+        print('\tYou BUST, IDIOT!!')
         round_status = 'L'
 
 def houseFinish():
-    global d_val
-    global p_val
-    global round_status
+    global dealer_value, player_value, round_status
     while True:
         if round_status == 'L':
             break
-        elif d_val < 16 and d_val < p_val:
+        elif dealer_value < 16 and dealer_value < player_value:
             card = random.choice(list(deck))
-            d_hand[card] = deck.get(card)
+            dealer_hand[card] = deck.get(card)
             del deck[card]
-            print('The dealer flips: ' + card)
-            print('The dealers hand is: '+str(list(d_hand)))
+            print('\tThe dealer flips: ' + card)
+            time.sleep(0.25)
             evaluate()
             continue
         else:
             evaluate()
-            if d_val > 21:
-                print('The dealer BUST!')
+            if dealer_value > 21:
+                print('\tThe dealer BUST!')
                 round_status = 'W'
-            elif d_val < p_val:
+            elif dealer_value < player_value:
                 round_status = 'W'
-            elif d_val > p_val:
+            elif dealer_value >= player_value:
                 round_status = 'L'
             break
 
@@ -111,7 +112,7 @@ def playerAction():
         if round_status != '':
             break
         else:
-            move = input('Would you like to Hit or Stay? ')
+            move = input('\tWould you like to Hit or Stay? ')
             move = move.lower()
             if move == 'hit':
                 hit()
@@ -120,9 +121,12 @@ def playerAction():
             elif move == 'stay':
                 break
             else:
-                print('You must choose either Hit or Stay. What would you like to do? ')
+                print('\tYou must choose either Hit or Stay. What would you like to do? ')
                 move = ''
-                continue
+
+def results():
+    print('\n\tYour hand: \n\t' + (' '.join(list(player_hand))))
+    print('\n\tDealer\'s hand: \n\t' + (' '.join(list(dealer_hand)))+'\n')
 
 
 # round start
@@ -130,26 +134,28 @@ def playerAction():
 while True:
     if wallet > 0:
         deck = full_deck.copy()
-        p_hand = {}
-        d_hand = {}
+        player_hand = {}
+        dealer_hand = {}
         round_status = ''
         move = ''
         placeBet()
+        time.sleep(0.5)
         deal()
         while True:
             if round_status == 'W':
-                print('You win the hand!')
+                print('You win the hand!\n')
+                print('~~*'*30+'\n')
                 wallet = wallet +(bet*2)
                 break
             elif round_status == 'L':
-                print('You lost the hand...')
+                print('You lost the hand...\n')
+                print('-'*90+'\n')
                 break
             else:
                 playerAction()
                 houseFinish()
+                results()
                 continue
-            print('You have $'+str(wallet)+' remaining in your wallet.')
-            continue
     elif wallet == 0:
         print('You are out of money. Game over....')
         print('Thanks for playing.')

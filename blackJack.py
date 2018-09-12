@@ -42,8 +42,46 @@ def placeBet():
 
 def evaluate():
     global player_value, dealer_value
-    player_value = sum(player_hand.values())
-    dealer_value = sum(dealer_hand.values())
+    while True:
+        player_value = sum(player_hand.values())
+        if player_value > 21 and 'A♧' in player_hand:
+            del player_hand['A♧']
+            player_hand['a♧'] = 1
+            continue
+        elif player_value > 21 and 'A♢' in player_hand:
+            del player_hand['A♢']
+            player_hand['a♢'] = 1
+            continue
+        elif player_value > 21 and 'A♡' in player_hand:
+            del player_hand['A♡']
+            player_hand['a♡'] = 1
+            continue
+        elif player_value > 21 and 'A♤' in player_hand:
+            del player_hand['A♤']
+            player_hand['a♤'] = 1
+            continue
+        else:
+            break
+    while True:
+        dealer_value = sum(dealer_hand.values())
+        if dealer_value > 21 and 'A♧' in dealer_hand:
+            del dealer_hand['A♧']
+            dealer_hand['a♧'] = 1
+            continue
+        elif dealer_value > 21 and 'A♢' in dealer_hand:
+            del dealer_hand['A♢']
+            dealer_hand['a♢'] = 1
+            continue
+        elif dealer_value > 21 and 'A♡' in dealer_hand:
+            del dealer_hand['A♡']
+            dealer_hand['a♡'] = 1
+            continue
+        elif dealer_value > 21 and 'A♤' in dealer_hand:
+            del dealer_hand['A♤']
+            dealer_hand['a♤'] = 1
+            continue
+        else:
+            break
 
 def deal():
     global round_status
@@ -65,7 +103,7 @@ def deal():
         round_status = 'L'
     elif player_value == 21:
         print('\t' + '*'*18 + '\n\t** BLACKJACK!!! **\n\t' + '*'*18 + '\n')
-        round_status = 'W'
+        round_status = 'B'
         
 
 def hit():
@@ -146,6 +184,11 @@ while True:
                 print('You win the hand!\n')
                 print('~~*'*30+'\n')
                 wallet = wallet +(bet*2)
+                break
+            elif round_status == 'B':
+                print('You win the hand!\n')
+                print('~~*'*30+'\n')
+                wallet = wallet +(bet*3)
                 break
             elif round_status == 'L':
                 print('You lost the hand...\n')

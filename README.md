@@ -3,8 +3,7 @@
 First Python project.
 
 Outstanding:
-Make the Ace value dynamic--i.e. 1 or 11
-Blackjack is worth 1.5 times bet.
+Refine evaluate() function with better dynamic Ace logic.
 consider split() double() functions
 add a high score tracker (write to csv or xlsx). record nbr of rounds played & highest wallet
 
